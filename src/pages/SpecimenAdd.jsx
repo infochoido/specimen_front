@@ -143,10 +143,9 @@ const handleSubmit = async () => {
               onChange={handleChange}
               className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101910] focus:outline-0 focus:ring-0 border border-[#d3e4d3] bg-[#f9fbf9] h-14 p-[15px] text-base font-normal leading-normal"
             >
-              <option value="">상태선택</option>
               <option value="사용가능">사용가능</option>
               <option value="사용중">사용중</option>
-              <option value="폐기">폐기</option>
+            
             </select>
           </label>
         </div>

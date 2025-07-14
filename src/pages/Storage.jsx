@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../services/api";
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Storage() {
   const [storages, setStorages] = useState([]);
@@ -11,6 +13,8 @@ export default function Storage() {
   const [newLocation, setNewLocation] = useState("");
   const [newPhotoUrl, setNewPhotoUrl] = useState("");
   const [adding, setAdding] = useState(false);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -98,7 +102,7 @@ export default function Storage() {
     <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
       <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
         <div className="flex flex-wrap justify-between gap-3 p-4">
-          <p className="text-[#0e1a0f] tracking-light text-[32px] font-bold leading-tight min-w-72">Storage</p>
+          <p className="text-[#0e1a0f] tracking-light text-[32px] font-bold leading-tight min-w-72">보관함</p>
         </div>
 
         {loading && <p className="text-gray-500 px-4">로딩 중...</p>}
@@ -107,16 +111,17 @@ export default function Storage() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
   {storages.map((storage) => (
         <div
-        key={storage.id}
-        className="flex flex-1 gap-3 rounded-lg border border-[#d1e6d1] bg-[#f8fbf8] p-4 flex-col"
+          key={storage.id}
+          onClick={() => navigate(`/storage/${storage.id}`)}
+          className="flex flex-1 gap-3 rounded-lg border border-[#d1e6d1] bg-[#f8fbf8] p-4 flex-col cursor-pointer hover:shadow-md transition"
         >
         <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-lg w-10 shrink-0"
-            style={{ backgroundImage: `url(${storage.photo_url || "https://via.placeholder.com/100"})` }}
+            style={{ backgroundImage: `url(${storage.photo_url})` }}
         ></div>
         <div className="flex flex-col gap-1">
             <h2 className="text-[#0e1a0f] text-base font-bold leading-tight">{storage.name}</h2>
-            <p className="text-[#519453] text-sm font-normal leading-normal">Location: {storage.location}</p>
+            <p className="text-[#519453] text-sm font-normal leading-normal">{storage.location}</p>
         </div>
         </div>
     ))}

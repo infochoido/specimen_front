@@ -3,7 +3,6 @@ import API_BASE_URL from "../services/api";
 
 export default function Logs() {
   const [logs, setLogs] = useState([]);
-  const [filteredLogs, setFilteredLogs] = useState([]);
   const [categories, setCategories] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -15,6 +14,13 @@ export default function Logs() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
+  const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  // 사용자 정보 가져오기
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -35,6 +41,7 @@ export default function Logs() {
     fetchUser();
   }, []);
 
+  // 필터/페이지 변경 시 로그 데이터 요청
   useEffect(() => {
     if (!userLabId) return;
 
@@ -42,15 +49,16 @@ export default function Logs() {
       setLoading(true);
       setError(null);
       try {
-        const queryParams = new URLSearchParams({
-          limit: 100,
+        const params = new URLSearchParams({
+          limit: pageSize,
+          skip: (page - 1) * pageSize,
           ...(actionFilter && { action: actionFilter }),
           ...(startDate && { start_date: startDate }),
           ...(endDate && { end_date: endDate }),
         });
 
         const res = await fetch(
-          `${API_BASE_URL}/api/v1/logs/lab/${userLabId}?${queryParams}`,
+          `${API_BASE_URL}/api/v1/logs/lab/${userLabId}?${params.toString()}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -58,17 +66,19 @@ export default function Logs() {
             },
           }
         );
+
         if (!res.ok) throw new Error("로그 데이터를 불러오지 못했습니다.");
+
+        // 응답 헤더에서 총 개수 가져오기
+        const total = res.headers.get("X-Total-Count");
+        setTotalCount(total ? parseInt(total, 10) : 0);
+
         const data = await res.json();
         setLogs(data);
 
-        // 고유한 카테고리 목록 추출
+        // 고유한 카테고리 목록 추출 (전체 로그 기준)
         const uniqueCategories = Array.from(
-          new Set(
-            data
-              .map(log => log.sample?.category)
-              .filter(category => category)
-          )
+          new Set(data.map(log => log.sample?.category).filter(Boolean))
         );
         setCategories(uniqueCategories);
       } catch (err) {
@@ -79,15 +89,17 @@ export default function Logs() {
     };
 
     fetchLogs();
-  }, [userLabId, actionFilter, startDate, endDate]);
+  }, [userLabId, actionFilter, startDate, endDate, page]);
 
-  // 필터링된 로그 계산
+  // 필터 변경 시 페이지 초기화
   useEffect(() => {
-    const filtered = logs.filter(log =>
-      !categoryFilter || log.sample?.category === categoryFilter
-    );
-    setFilteredLogs(filtered);
-  }, [logs, categoryFilter]);
+    setPage(1);
+  }, [actionFilter, startDate, endDate]);
+
+  // 카테고리 필터링 (클라이언트에서)
+  const filteredLogs = logs.filter(log =>
+    !categoryFilter || log.sample?.category === categoryFilter
+  );
 
   const downloadCSV = () => {
     const header = ["ID", "샘플 번호", "사용자 이름", "행동", "기타", "시간"];
@@ -97,7 +109,7 @@ export default function Logs() {
       log.user?.name,
       log.action,
       log.etc,
-      log.timestamp,
+      new Date(log.timestamp).toLocaleString("ko-KR"),
     ]);
 
     const csvContent = [header, ...rows]
@@ -115,8 +127,8 @@ export default function Logs() {
     <div className="px-40 py-5">
       <div className="max-w-[960px] mx-auto">
         <div className="p-4">
-          <h2 className="text-[32px] font-bold text-[#101910]">Log Management</h2>
-          <p className="text-sm text-[#578e58]">View and manage all system logs</p>
+          <h2 className="text-[32px] font-bold text-[#101910]">로그 관리</h2>
+          <p className="text-sm text-[#578e58]">검체 관리 시스템 로그 추적 및 분석</p>
         </div>
 
         <div className="flex gap-3 flex-wrap p-3">
@@ -164,32 +176,66 @@ export default function Logs() {
         ) : error ? (
           <p className="text-center text-sm text-red-500">{error}</p>
         ) : (
-          <div className="overflow-x-auto border rounded-xl">
-            <table className="w-full">
-              <thead className="bg-[#f9fbf9] text-sm text-[#101910]">
-                <tr>
-                  <th className="px-4 py-3 text-left">검체</th>
-                  <th className="px-4 py-3 text-left">샘플 번호</th>
-                  <th className="px-4 py-3 text-left">사용자 이름</th>
-                  <th className="px-4 py-3 text-left">행동</th>
-                  <th className="px-4 py-3 text-left">기타</th>
-                  <th className="px-4 py-3 text-left">시간</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="border-t">
-                    <td className="px-4 py-2 text-sm text-[#578e58]">{log.sample?.category || "-"}</td>
-                    <td className="px-4 py-2 text-sm text-[#578e58]">{log.sample?.sample_number || "-"}</td>
-                    <td className="px-4 py-2 text-sm text-[#578e58]">{log.user?.name || "-"}</td>
-                    <td className="px-4 py-2 text-sm text-[#578e58]">{log.action}</td>
-                    <td className="px-4 py-2 text-sm text-[#578e58]">{log.etc || "-"}</td>
-                    <td className="px-4 py-2 text-sm text-[#578e58]">{new Date(log.timestamp).toLocaleString("ko-KR")}</td>
+          <>
+            <div className="overflow-x-auto border rounded-xl">
+              <table className="w-full">
+                <thead className="bg-[#f9fbf9] text-sm text-[#101910]">
+                  <tr>
+                    <th className="px-4 py-3 text-left">검체</th>
+                    <th className="px-4 py-3 text-left">샘플 번호</th>
+                    <th className="px-4 py-3 text-left">사용자 이름</th>
+                    <th className="px-4 py-3 text-left">행동</th>
+                    <th className="px-4 py-3 text-left">기타</th>
+                    <th className="px-4 py-3 text-left">시간</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredLogs.map((log) => (
+                    <tr key={log.id} className="border-t">
+                      <td className="px-4 py-2 text-sm text-[#578e58]">{log.sample?.category || "-"}</td>
+                      <td className="px-4 py-2 text-sm text-[#578e58]">{log.sample?.sample_number || "-"}</td>
+                      <td className="px-4 py-2 text-sm text-[#578e58]">{log.user?.name || "-"}</td>
+                      <td className="px-4 py-2 text-sm text-[#578e58]">{log.action}</td>
+                      <td className="px-4 py-2 text-sm text-[#578e58]">{log.etc || "-"}</td>
+                      <td className="px-4 py-2 text-sm text-[#578e58]">{new Date(log.timestamp).toLocaleString("ko-KR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 페이지네이션 */}
+            <div className="flex justify-center items-center gap-3 py-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className={`rounded px-3 py-1 border ${page === 1 ? "text-gray-400 border-gray-300 cursor-not-allowed" : "text-[#578e58] border-[#578e58] hover:bg-[#e9f1e9]"}`}
+              >
+                이전
+              </button>
+
+              {[...Array(totalPages)].map((_, idx) => {
+                const pageNum = idx + 1;
+                return (
+                  <button
+                    key={`page-${pageNum}`}
+                    onClick={() => setPage(pageNum)}
+                    className={`rounded px-3 py-1 border ${page === pageNum ? "bg-[#578e58] text-white" : "text-[#578e58] border-[#578e58] hover:bg-[#e9f1e9]"}`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className={`rounded px-3 py-1 border ${page === totalPages ? "text-gray-400 border-gray-300 cursor-not-allowed" : "text-[#578e58] border-[#578e58] hover:bg-[#e9f1e9]"}`}
+              >
+                다음
+              </button>
+            </div>
+          </>
         )}
 
         <div className="flex justify-end px-4 py-3">

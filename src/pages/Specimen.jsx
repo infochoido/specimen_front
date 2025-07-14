@@ -136,7 +136,7 @@ export default function Specimen() {
             {/* 상단 타이틀 + 버튼 */}
             <div className="flex flex-wrap justify-between gap-3 p-4">
               <p className="text-[#0e1a0f] tracking-light text-[32px] font-bold leading-tight min-w-72">
-                Specimens
+                가검물
               </p>
               <div className="flex flex-wrap gap-2">
               <button
@@ -212,11 +212,12 @@ export default function Specimen() {
                       <tr
                         key={sample.id}
                         className="hover:bg-[#e8f2e8] cursor-pointer"
+                        onClick={()=> navigate(`/specimen/${sample.id}`)}
                       >
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">{sample.sample_number || sample.id}</td>
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">{sample.species || "-"}</td>
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">{sample.location || "-"}</td>
-                        <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">{sample.volume_remaining || "-"}</td>
+                        <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">{sample.volume_remaining || "-"} ml</td>
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">{sample.category || "-"}</td>
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">{sample.status || "-"}</td>
                       </tr>
