@@ -124,8 +124,8 @@ export default function Logs() {
   };
 
   return (
-    <div className="px-40 py-5">
-      <div className="max-w-[960px] mx-auto">
+    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
+      <div className="min-w-[600px] max-w-[960px] w-full rounded-lg ">
         <div className="p-4">
           <h2 className="text-[32px] font-bold text-[#101910]">로그 관리</h2>
           <p className="text-sm text-[#578e58]">검체 관리 시스템 로그 추적 및 분석</p>

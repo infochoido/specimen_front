@@ -101,7 +101,7 @@ const handleSubmit = async () => {
 
 
   return (
-    <div className="px-20 flex flex-1 justify-center py-5">
+    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
       <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
         <div className="flex flex-wrap justify-between gap-3 p-4">
           <p className="text-[#101910] tracking-light text-[32px] font-bold leading-tight min-w-72">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   FlaskIcon,
@@ -6,28 +6,25 @@ import {
   ArchiveIcon,
   ListIcon,
   ChartIcon,
+  BellIcon
 } from "../assets/Icons/Icons";
 import SignUpModal from "./SignUpModal";
 import LoginModal from "./LoginModal";
+import Alert from "./alert"; // ✅ 추가
+
 
 const menu = [
   { label: "대시보드", path: "/", icon: <ChartIcon /> },
   { label: "실험실 관리", path: "/lab", icon: <FlaskIcon /> },
-  { label: "가검물 관리", path: "/specimen", icon: <FilesIcon /> },
+  { label: "전체 샘플 관리", path: "/specimen", icon: <FilesIcon /> },
   { label: "저장소 관리", path: "/storage", icon: <ArchiveIcon /> },
   { label: "로그 관리", path: "/logs", icon: <ListIcon /> },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ isLoggedIn, setIsLoggedIn }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // 🔐 초기 로그인 상태 확인
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    setIsLoggedIn(!!token);
-  }, []);
+  const [showAlert, setShowAlert] = useState(false); // ✅ 알림 상태
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
@@ -60,15 +57,29 @@ const Sidebar = () => {
           ))}
         </nav>
 
-        {/* 🔄 로그인 상태에 따른 버튼 렌더링 */}
         <div className="pt-3 border-t mt-6">
           {isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-2 rounded-md  text-gray text-sm font-medium"
-            >
-              로그아웃
-            </button>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {/* ✅ 알림 버튼 */}
+                <button
+                  onClick={() => setShowAlert(!showAlert)}
+                  className="px-4 py-2  text-sm font-medium text-[#0e1a0f] hover:bg-[#e4eee4] rounded-md flex items-center gap-2"
+                >
+                  <BellIcon className="w-5 h-5" />
+                </button>
+                {/* 로그아웃 버튼 */}
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 px-4 py-2 rounded-md bg-white border border-[#d3e4d3] text-sm font-medium text-[#0e1a0f] hover:bg-[#f4f4f4]"
+                >
+                  로그아웃
+                </button>
+              </div>
+
+              {/* ✅ 알림 내용 표시 */}
+              {showAlert && <Alert />}
+            </div>
           ) : (
             <>
               <button
@@ -88,7 +99,6 @@ const Sidebar = () => {
         </div>
       </aside>
 
-      {/* 로그인 모달 */}
       {showLoginModal && (
         <LoginModal
           onClose={() => setShowLoginModal(false)}
@@ -96,7 +106,6 @@ const Sidebar = () => {
         />
       )}
 
-      {/* 회원가입 모달 */}
       {showSignUpModal && (
         <SignUpModal onClose={() => setShowSignUpModal(false)} />
       )}

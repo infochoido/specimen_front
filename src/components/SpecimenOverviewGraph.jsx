@@ -13,7 +13,7 @@ const SpecimenOverviewGraph = ({ trendData }) => {
       </p>
       <div className="flex gap-1">
         <p className="text-[#578e58] text-base font-normal leading-normal">
-          Last 30 Days
+          최근 30일
         </p>
         <p className="text-[#078823] text-base font-medium leading-normal">
           {percentage > 0 ? `+${percentage}%` : `${percentage}%`}
