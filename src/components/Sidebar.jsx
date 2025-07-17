@@ -25,16 +25,20 @@ const Sidebar = ({ isLoggedIn, setIsLoggedIn }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false); // ✅ 알림 상태
+  
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setShowLoginModal(false);
+    console.log("로그인 성공");
+    window.location.reload(); // 로그인 후 페이지 새로고침
   };
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
+    window.location.reload(); // 로그아웃 후 페이지 새로고침
   };
 
   return (

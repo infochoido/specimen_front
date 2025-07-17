@@ -5,6 +5,8 @@ import SpecimenTypeChart from "../components/SpecimenTypeChart";
 import API_BASE_URL from "../services/api";
 import { API_DEV_URL } from "../services/api"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext";
+import LoginModal from "../components/LoginModal";
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -12,8 +14,11 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [labId, setLabId] = useState(null);
   const navigate = useNavigate();
+   const { isLoggedIn, user, checkLogin } = useAuth();
+  
 
   useEffect(() => {
+    if (isLoggedIn !== true) return;
     const fetchUser = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
@@ -25,9 +30,9 @@ const Dashboard = () => {
         const data = await res.json();
         setLabId(data.lab_id);
       } catch (err) {
+        
         setError("사용자 정보를 불러오지 못했습니다.");
-        console.error(err);
-        navigate("/login");
+        navigate("/");
       }
     };
     fetchUser();
@@ -81,6 +86,10 @@ const Dashboard = () => {
   fetchStats();
   fetchRecentLogs();
 }, []);
+
+  if (!isLoggedIn) {
+    return <p>로그인을 해주세요</p>
+  }
 
 
   if (error) return <p className="text-center text-red-500">{error}</p>;

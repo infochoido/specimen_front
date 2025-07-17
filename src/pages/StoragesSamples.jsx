@@ -78,8 +78,8 @@ export default function StorageSamples() {
                 <table className="min-w-full table-fixed border-collapse border border-[#e8f2e8]">
                   <thead className="bg-[#f0f6f0]">
                     <tr>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">샘플번호</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">종</th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체 이름</th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체 번호</th>
                       <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">잔여용량</th>
                       <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체</th>
                       <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">상태</th>
@@ -92,8 +92,8 @@ export default function StorageSamples() {
                         className="hover:bg-[#e8f2e8] cursor-pointer"
                         onClick={() => navigate(`/specimen/${sample.id}`)}
                       >
-                        <td className="border px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">{sample.sample_number || sample.id}</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.species || "-"}</td>
+                        <td className="border px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">{sample.sample_number || sample.id}</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.volume_remaining || "-"} ml</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.category || "-"}</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.status || "-"}</td>

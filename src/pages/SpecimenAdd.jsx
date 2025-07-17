@@ -110,11 +110,10 @@ const handleSubmit = async () => {
         </div>
 
         {[
-                ["sample_number", "샘플 번호", "샘플 번호 입력", true],
+                ["species", "검체 이름", "검체 이름 입력", false],
+                ["sample_number", "검체 번호", "검체 번호 입력", true],
                 ["category", "카테고리", "카테고리 입력", true],
-                ["collected_date", "채취일자", "YYYY-MM-DD", false],
-                ["species", "종", "종 입력", false],
-                ["volume_remaining", "잔량", "잔량 입력", false],
+                ["collected_date", "채취일자", "YYYY-MM-DD", false],  
                 ["collected_place", "채취 장소", "채취 장소 입력", false],
                 ].map(([name, label, placeholder, required]) => (
                 <div key={name} className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
@@ -123,6 +122,7 @@ const handleSubmit = async () => {
                         {label}
                         {required && <span className="text-red-500 ml-1">*</span>}
                     </p>
+                    
                     <input
                         name={name}
                         value={formData[name]}
@@ -135,6 +135,7 @@ const handleSubmit = async () => {
                 ))}
 
         <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+          
           <label className="flex flex-col min-w-40 flex-1">
             <p className="text-[#101910] text-base font-medium leading-normal pb-2">상태<span className="text-red-500 ml-1">*</span></p>
             <select
@@ -149,10 +150,29 @@ const handleSubmit = async () => {
             </select>
           </label>
         </div>
+        <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+          <label className="flex flex-col min-w-40 flex-1">
+            <p className="text-[#101910] text-base font-medium leading-normal pb-2">
+              잔량
+            </p>
+            <select
+              name="volume_remaining"
+              value={formData.volume_remaining}
+              onChange={handleChange}
+              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101910] focus:outline-0 focus:ring-0 border border-[#d3e4d3] bg-[#f9fbf9] h-14 p-[15px] text-base font-normal leading-normal"
+            >
+              <option value="">잔량 선택</option>
+              <option value={0.5}>0.5ml</option>
+              <option value={1.0}>1.0ml</option>
+              <option value={1.5}>1.5ml</option>
+              <option value={2.0}>2.0ml</option>
+            </select>
+          </label>
+        </div>
 
         <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
           <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-[#101910] text-base font-medium leading-normal pb-2">저장소</p>
+            <p className="text-[#101910] text-base font-medium leading-normal pb-2">저장소<span className="text-red-500 ml-1">*</span></p>
             <select
               name="storage_id"
               value={formData.storage_id}

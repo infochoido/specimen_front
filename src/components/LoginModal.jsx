@@ -30,7 +30,9 @@ export default function LoginModal({ onClose, onLoginSuccess }) {
     localStorage.setItem("access_token", data.access_token);
 
     alert("로그인 성공!");
+
     if (onLoginSuccess) onLoginSuccess();
+    if(onLoginSuccess) {console.log("로그인 성공");}
     if (onClose) onClose();
   } catch (err) {
     alert("로그인 실패");

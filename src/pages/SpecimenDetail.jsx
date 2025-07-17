@@ -10,6 +10,40 @@ export default function SpecimenDetail() {
   const [saving, setSaving] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnVolume, setReturnVolume] = useState("");
+  const [storages, setStorages] = useState([]);
+  const [storageName, setStorageName] = useState("");
+
+  
+useEffect(() => {
+  if (sample?.storage_id) {
+    fetch(`${API_BASE_URL}/api/v1/storages/${sample.storage_id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setStorageName(data.name ?? "-");
+      })
+      .catch((err) => {
+        console.error("보관함 이름 가져오기 실패:", err);
+        setStorageName("-");
+      });
+  }
+}, [sample?.storage_id]);
+
+useEffect(() => {
+  fetch(`${API_BASE_URL}/api/v1/storages/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => setStorages(data))
+    .catch((err) => {
+      console.error("보관함 목록 불러오기 실패:", err);
+    });
+}, []);
 
   const createLog = async (action) => {
     fetch(`${API_BASE_URL}/api/v1/logs`, {
@@ -43,33 +77,50 @@ export default function SpecimenDetail() {
     })();
   }, [id]);
 
-  const saveChanges = async () => {
-    setSaving(true);
-    const res = await fetch(`${API_BASE_URL}/api/v1/case-samples/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-      body: JSON.stringify(form),
-    });
-    setSaving(false);
+const saveChanges = async () => {
+  setSaving(true);
 
-    if (res.ok) {
-      const updated = await res.json();
-      setSample(updated);
-      setEditMode(false);
-      alert("수정 완료!");
-      return true;
-    } else {
-      const err = await res.json();
-      alert(`수정 실패: ${err.detail ?? res.status}`);
-      return false;
-    }
+  // 숫자 변환 처리
+  const payload = {
+    ...form,
+    volume_remaining:
+      form.volume_remaining === "" || form.volume_remaining === null
+        ? null
+        : Number(form.volume_remaining),
   };
 
-  const handleChange = (field) => (e) =>
-    setForm({ ...form, [field]: e.target.value });
+  const res = await fetch(`${API_BASE_URL}/api/v1/case-samples/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  setSaving(false);
+
+  if (res.ok) {
+    const updated = await res.json();
+    setSample(updated);
+    setEditMode(false);
+    alert("수정 완료!");
+    return true;
+  } else {
+    const err = await res.json();
+    console.error("수정 실패:", form);
+    alert(`수정 실패: ${err.detail ?? res.status}`);
+    return false;
+  }
+};
+
+const handleChange = (field) => (e) => {
+  let value = e.target.value;
+  if (field === "volume_remaining") {
+    value = value === "" ? "" : Number(value);
+  }
+  setForm({ ...form, [field]: value });
+};
+
 
   const updateStatus = async (newStatus) => {
     if (newStatus === "사용가능") {
@@ -156,155 +207,195 @@ export default function SpecimenDetail() {
     ["검출일자", "detected_date"],
     ["법정감염병 ", "legal_disease"],
     ["법정균", "legal_group"],
+    ["보관함", "storage_id"],
   ];
 
-  return (
-    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
-      <div className="max-w-[960px] w-full bg-[#f8fbf8]">
-        {/* 헤더 */}
-        <div className="px-4 pb-4">
-          <h1 className="text-[28px] font-bold text-[#0e1a0f]">검체 상세</h1>
-          <p className="text-sm text-[#519453]">전체 검체 정보 및 관리</p>
-        </div>
+return (
+  <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
+    <div className="max-w-[960px] w-full bg-[#f8fbf8]">
+      {/* 헤더 */}
+      <div className="px-4 pb-4">
+        <h1 className="text-[28px] font-bold text-[#0e1a0f]">검체 상세</h1>
+        <p className="text-sm text-[#519453]">전체 검체 정보 및 관리</p>
+      </div>
 
-        {/* 정보 그리드 */}
-        <div className="grid grid-cols-2 gap-x-2">
-          {fields.map(([label, key], idx) => (
-            <div
-              key={key}
-              className={`flex flex-col gap-1 border-t border-[#d1e6d1] py-4 ${
-                idx % 2 === 0 ? "pr-2" : "pl-2"
-              }`}
-            >
-              <p className="text-[#519453] text-sm">{label}</p>
-              {editMode ? (
+      {/* 정보 그리드 */}
+      <div className="grid grid-cols-2 gap-x-2">
+        {fields.map(([label, key], idx) => (
+          <div
+            key={key}
+            className={`flex flex-col gap-1 border-t border-[#d1e6d1] py-4 ${
+              idx % 2 === 0 ? "pr-2" : "pl-2"
+            }`}
+          >
+            <p className="text-[#519453] text-sm">{label}</p>
+            {editMode ? (
+              key === "storage_id" ? (
+                <select
+                  className="h-10 rounded border px-2 text-sm"
+                  value={form.storage_id ?? ""}
+                  onChange={handleChange("storage_id")}
+                >
+                  <option value="">선택 안 함</option>
+                  {storages.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              ) : key === "volume_remaining" ? (
+                <select
+                  className="h-10 rounded border px-2 text-sm"
+                  value={form.volume_remaining ?? ""}
+                  onChange={handleChange("volume_remaining")}
+                >
+                  <option value="">선택 안 함</option>
+                  {[ 1.0,  2.0].map((val) => (
+                    <option key={val} value={val}>
+                      {val} ml
+                    </option>
+                  ))}
+                </select>
+              ) : (
                 <input
                   className="h-10 rounded border px-2 text-sm"
                   value={form[key] ?? ""}
                   onChange={handleChange(key)}
                 />
-              ) : (
-                <p className="text-sm text-[#0e1a0f]">{sample[key] ?? "-"}</p>
-              )}
-            </div>
-          ))}
-        </div>
+              )
+            ) : (
+              <p className="text-sm text-[#0e1a0f]">
+                {key === "storage_id"
+                  ? storageName || "-"
+                  : key === "volume_remaining"
+                  ? `${sample.volume_remaining ?? "-"} ml`
+                  : sample[key] ?? "-"}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
 
-        {/* 상태 표시 */}
-        <div className="px-4 pt-6">
-          <p className="text-sm font-medium mb-2 text-[#0e1a0f]">상태</p>
-          {editMode ? (
-            <select
-              className="w-full h-12 rounded border px-3"
-              value={form.status}
-              onChange={handleChange("status")}
+      {/* 상태 표시 */}
+      <div className="px-4 pt-6">
+        <p className="text-sm font-medium mb-2 text-[#0e1a0f]">상태</p>
+        {editMode ? (
+          <select
+            className="w-full h-12 rounded border px-3"
+            value={form.status}
+            onChange={handleChange("status")}
+          >
+            <option value="사용가능">사용가능</option>
+            <option value="사용중">사용중</option>
+            <option value="폐기">폐기</option>
+          </select>
+        ) : (
+          <div className="h-12 flex items-center rounded border px-3 bg-[#f8fbf8]">
+            {sample.status}
+          </div>
+        )}
+      </div>
+
+      {/* 버튼 영역 */}
+      <div className="flex gap-3 justify-end px-4 py-6">
+        {editMode ? (
+          <>
+            <button
+              onClick={() => setEditMode(false)}
+              className="h-10 px-4 rounded-full bg-transparent border font-bold"
             >
-              <option value="사용가능">사용가능</option>
-              <option value="사용중">사용중</option>
-              <option value="폐기">폐기</option>
-            </select>
-          ) : (
-            <div className="h-12 flex items-center rounded border px-3 bg-[#f8fbf8]">
-              {sample.status}
-            </div>
-          )}
-        </div>
-
-        {/* 버튼 영역 */}
-        <div className="flex gap-3 justify-end px-4 py-6">
-          {editMode ? (
-            <>
+              취소
+            </button>
+            <button
+              disabled={saving}
+              onClick={saveChanges}
+              className="h-10 px-4 rounded-full bg-[#4ee350] text-[#0e1a0f] font-bold disabled:opacity-50"
+            >
+              {saving ? "저장 중..." : "저장"}
+            </button>
+          </>
+        ) : (
+          <>
+            {sample.status === "사용가능" && (
               <button
-                onClick={() => setEditMode(false)}
-                className="h-10 px-4 rounded-full bg-transparent border font-bold"
+                onClick={() => updateStatus("사용중")}
+                className="h-10 px-4 rounded-full bg-[#e8f2e8] text-[#0e1a0f] font-bold"
+              >
+                사용
+              </button>
+            )}
+            {sample.status === "사용중" && (
+              <button
+                onClick={() => updateStatus("사용가능")}
+                className="h-10 px-4 rounded-full bg-[#e8f2e8] text-[#0e1a0f] font-bold"
+              >
+                반납
+              </button>
+            )}
+            <button
+              onClick={() => setEditMode(true)}
+              className="h-10 px-4 rounded-full bg-[#4ee350] text-[#0e1a0f] font-bold"
+            >
+              수정
+            </button>
+            {sample.status !== "폐기" && (
+              <button
+                onClick={() => updateStatus("폐기")}
+                className="h-10 px-4 rounded-full bg-transparent text-[#0e1a0f] font-bold"
+              >
+                폐기
+              </button>
+            )}
+            {sample.status === "폐기" && (
+              <button
+                onClick={() => updateStatus("사용가능")}
+                className="h-10 px-4 rounded-full bg-transparent text-[#0e1a0f] font-bold border border-[#0e1a0f]"
+              >
+                복구
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* 반납 잔량 입력 모달 (수정: 숫자 입력 → select 옵션) */}
+      {showReturnModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[320px]">
+            <h2 className="text-lg font-semibold mb-4">잔량을 선택하세요</h2>
+            <select
+              className="w-full border rounded px-3 py-2 mb-4"
+              value={returnVolume}
+              onChange={(e) => setReturnVolume(e.target.value)}
+            >
+              <option value="">선택 안 함</option>
+              {[ 1.0,  2.0].map((val) => (
+                <option key={val} value={val}>
+                  {val} ml
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowReturnModal(false)}
+                className="px-4 py-2 rounded border"
+                disabled={saving}
               >
                 취소
               </button>
               <button
+                onClick={handleReturnConfirm}
+                className="px-4 py-2 rounded bg-[#4ee350] font-bold"
                 disabled={saving}
-                onClick={saveChanges}
-                className="h-10 px-4 rounded-full bg-[#4ee350] text-[#0e1a0f] font-bold disabled:opacity-50"
               >
-                {saving ? "저장 중..." : "저장"}
+                {saving ? "저장 중..." : "확인"}
               </button>
-            </>
-          ) : (
-            <>
-              {sample.status === "사용가능" && (
-                <button
-                  onClick={() => updateStatus("사용중")}
-                  className="h-10 px-4 rounded-full bg-[#e8f2e8] text-[#0e1a0f] font-bold"
-                >
-                  사용
-                </button>
-              )}
-              {sample.status === "사용중" && (
-                <button
-                  onClick={() => updateStatus("사용가능")}
-                  className="h-10 px-4 rounded-full bg-[#e8f2e8] text-[#0e1a0f] font-bold"
-                >
-                  반납
-                </button>
-              )}
-              <button
-                onClick={() => setEditMode(true)}
-                className="h-10 px-4 rounded-full bg-[#4ee350] text-[#0e1a0f] font-bold"
-              >
-                수정
-              </button>
-              {sample.status !== "폐기" && (
-                <button
-                  onClick={() => updateStatus("폐기")}
-                  className="h-10 px-4 rounded-full bg-transparent text-[#0e1a0f] font-bold"
-                >
-                  폐기
-                </button>
-              )}
-              {sample.status === "폐기" && (
-                <button
-                  onClick={() => updateStatus("사용가능")}
-                  className="h-10 px-4 rounded-full bg-transparent text-[#0e1a0f] font-bold border border-[#0e1a0f]"
-                >
-                  복구
-                </button>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* 반납 잔량 입력 모달 */}
-        {showReturnModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-[320px]">
-              <h2 className="text-lg font-semibold mb-4">잔량을 입력하세요</h2>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                className="w-full border rounded px-3 py-2 mb-4"
-                value={returnVolume}
-                onChange={(e) => setReturnVolume(e.target.value)}
-              />
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowReturnModal(false)}
-                  className="px-4 py-2 rounded border"
-                  disabled={saving}
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleReturnConfirm}
-                  className="px-4 py-2 rounded bg-[#4ee350] font-bold"
-                  disabled={saving}
-                >
-                  {saving ? "저장 중..." : "확인"}
-                </button>
-              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
+
 }
