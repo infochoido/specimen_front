@@ -19,10 +19,13 @@ export default function Specimen() {
   setFilterStatus(status);
   };
 
-  const filteredSamples = samples.filter((sample) => {
-    if (filterStatus === "전체") return true;
-    return sample.status === filterStatus;
-    });
+const filteredSamples = samples.filter((sample) => {
+  if (filterStatus === "전체") {
+    return sample.status !== "폐기"; // 폐기 상태 제외
+  }
+  return sample.status === filterStatus;
+});
+
 
   useEffect(() => {
     const fetchUser = async () => {

@@ -41,15 +41,25 @@ function AppWrapper() {
     return <div className="w-full h-screen flex items-center justify-center">로딩 중...</div>;
   }
 
-  return (
+ return (
     <AuthProvider>
       <div className="flex flex-col min-h-screen bg-[#f9fbf9] font-sans">
-        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} /> {/* ✅ 헤더 삽입 */}
-        <div className="flex flex-1 ">
-          <div className="h-full">
-          {sidebarOpen && <Sidebar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />}
+        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex flex-1 h-screen overflow-hidden">
+          {/* 사이드바: width transition 적용, overflow-hidden으로 내용 숨김 */}
+          <div
+            className={`flex flex-col bg-white shadow-md overflow-hidden
+              transition-[width] duration-300 ease-in-out
+              ${sidebarOpen ? "w-80" : "w-0"}`}
+          >
+            {/* 사이드바 내용, width가 0일 때 안 보이도록 */}
+            {sidebarOpen && (
+              <Sidebar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+            )}
           </div>
-          <main className="flex-1 px-6 overflow-y-auto">
+
+          {/* 메인 영역 */}
+          <main className="flex-1 px-6 overflow-y-auto h-full">
             <Outlet />
           </main>
         </div>
@@ -57,4 +67,5 @@ function AppWrapper() {
     </AuthProvider>
   );
 }
+
 export default AppWrapper;

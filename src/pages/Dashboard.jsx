@@ -50,6 +50,7 @@ const Dashboard = () => {
       if (!res.ok) throw new Error("대시보드 데이터를 불러오지 못했습니다.");
       const data = await res.json();
       setStats(data);
+      console.log("대시보드 데이터:", data); // ← 여기 확인
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -107,7 +108,7 @@ const Dashboard = () => {
             <div className="flex flex-wrap gap-4 p-4">
               <DashboardSummaryCard label="총 검체" value={stats.total} />
               <DashboardSummaryCard label="현재 저장중인 검체" value={stats.in_storage} />
-              <DashboardSummaryCard label="사용중 or 폐기된 검체" value={stats.processed} />
+              <DashboardSummaryCard label="사용중인 검체" value={stats.processed} />
             </div>
 
             <h2 className="text-[#101910] text-[22px] font-bold px-4 pb-3 pt-5">검체 개요</h2>

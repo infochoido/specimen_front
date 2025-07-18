@@ -42,8 +42,8 @@ const Sidebar = ({ isLoggedIn, setIsLoggedIn }) => {
   };
 
   return (
-    <>
-      <aside className="w-80 h-[80%] flex flex-col justify-between bg-[#f9fbf9] p-4 border-r">
+    <div className="h-full">
+      <aside className="w-80 h-full flex flex-col  bg-[#f9fbf9] p-4 border-r">
         <nav className="flex flex-col gap-2">
           {menu.map((item) => (
             <NavLink
@@ -61,7 +61,7 @@ const Sidebar = ({ isLoggedIn, setIsLoggedIn }) => {
           ))}
         </nav>
 
-        <div className="pt-3 border-t mt-6">
+        <div className="pt-3 border-t mt-6 mb-6 pb-16">
           {isLoggedIn ? (
             <div className="flex flex-col gap-2">
               <div className="flex gap-2">
@@ -113,7 +113,7 @@ const Sidebar = ({ isLoggedIn, setIsLoggedIn }) => {
       {showSignUpModal && (
         <SignUpModal onClose={() => setShowSignUpModal(false)} />
       )}
-    </>
+    </div>
   );
 };
 
