@@ -139,11 +139,11 @@ export default function Specimen() {
 
   return (
     <div
-      className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen"
+      className=" flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen"
       style={{ fontFamily: 'Manrope, "Noto Sans", sans-serif' }}
     >
       <div className="layout-container flex h-full grow flex-col">
-        <main className="px-40 flex flex-1 justify-center py-5">
+        <main className="flex flex-1 justify-center py-5">
           <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
             {/* 상단 타이틀 + 버튼 */}
             <div className="flex flex-wrap justify-between gap-3 p-4">
@@ -218,7 +218,7 @@ export default function Specimen() {
                         onClick={() => navigate(`/specimen/${sample.id}`)}
                       >
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f]">
-                          {sample.species || "-"}
+                          {sample.sample_name || "-"}
                         </td>
                         <td className="border border-[#e8f2e8] px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">
                           {sample.sample_number || sample.id}

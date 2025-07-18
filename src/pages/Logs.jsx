@@ -116,7 +116,9 @@ export default function Logs() {
       .map(e => e.map(v => `"${v ?? ""}"`).join(","))
       .join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const bom = "\uFEFF";
+
+    const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `logs-${new Date().toISOString()}.csv`;
@@ -124,7 +126,7 @@ export default function Logs() {
   };
 
   return (
-    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
+    <div className="flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
       <div className="min-w-[600px] max-w-[960px] w-full rounded-lg ">
         <div className="p-4">
           <h2 className="text-[32px] font-bold text-[#101910]">로그 관리</h2>

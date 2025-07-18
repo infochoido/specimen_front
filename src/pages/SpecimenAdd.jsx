@@ -101,7 +101,7 @@ const handleSubmit = async () => {
 
 
   return (
-    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
+    <div className="flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
       <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
         <div className="flex flex-wrap justify-between gap-3 p-4">
           <p className="text-[#101910] tracking-light text-[32px] font-bold leading-tight min-w-72">
@@ -110,9 +110,10 @@ const handleSubmit = async () => {
         </div>
 
         {[
-                ["species", "검체 이름", "검체 이름 입력", false],
+                ["sample_name", "검체 이름", "검체 이름 입력", false],
                 ["sample_number", "검체 번호", "검체 번호 입력", true],
                 ["category", "카테고리", "카테고리 입력", true],
+                ["species", "종", "종 입력", false],
                 ["collected_date", "채취일자", "YYYY-MM-DD", false],  
                 ["collected_place", "채취 장소", "채취 장소 입력", false],
                 ].map(([name, label, placeholder, required]) => (

@@ -88,7 +88,7 @@ const Dashboard = () => {
 }, []);
 
   if (!isLoggedIn) {
-    return <p>로그인을 해주세요</p>
+    return <div className="w-full flex min-h-screen items-center flex-col justify-center"><p className="font-bold text-xl">로그인을 해주세요</p></div>
   }
 
 

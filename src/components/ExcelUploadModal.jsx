@@ -137,7 +137,7 @@ const handleSave = () => {
     baseData.storage_id = storageId;
     baseData.lab_id = labId;
     baseData.current_user_id =  userId;
-    baseData.species = sampleNameFromFilename;
+    baseData.sample_name = sampleNameFromFilename;
 
     const rawCategory = row[Object.keys(mapping).find((key) => mapping[key] === "category")];
     if (!rawCategory) return []; // category 없으면 저장 안함

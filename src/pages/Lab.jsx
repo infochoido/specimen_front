@@ -58,11 +58,11 @@ export default function LabPage() {
   }, []);
 
   if (loading) return <div className="p-10 text-[#101910]">로딩 중...</div>;
-  if (error) return <div className="p-10 text-red-600">에러: {error}</div>;
+  if (error) return <div className="p-10 text-red-600"> 사용자 정보를 찾을 수 없습니다 : {error}</div>;
   if (!lab) return <div className="p-10 text-gray-600">실험실 정보를 찾을 수 없습니다.</div>;
 
   return (
-    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
+    <div className=" flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
       <div className="min-w-[600px] max-w-[960px] w-full  rounded-lg ">
         <h1 className="text-[32px] font-bold text-[#101910] mb-2">{lab.name}</h1>
         <p className="text-[#578e58] mb-6">{lab.location || "위치 정보 없음"}</p>

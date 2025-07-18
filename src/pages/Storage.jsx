@@ -99,7 +99,7 @@ export default function Storage() {
   };
 
   return (
-    <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
+    <div className="flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
       <div className="layout-content-container flex flex-col min-w-[600px] max-w-[960px] flex-1">
         <div className="flex flex-wrap justify-between gap-3 p-4">
           <p className="text-[#0e1a0f] tracking-light text-[32px] font-bold leading-tight min-w-72">보관함</p>
@@ -154,13 +154,6 @@ export default function Storage() {
                 placeholder="위치"
                 value={newLocation}
                 onChange={(e) => setNewLocation(e.target.value)}
-                className="w-full mb-3 px-3 py-2 border rounded"
-              />
-              <input
-                type="text"
-                placeholder="사진 URL (선택)"
-                value={newPhotoUrl}
-                onChange={(e) => setNewPhotoUrl(e.target.value)}
                 className="w-full mb-3 px-3 py-2 border rounded"
               />
               <div className="flex justify-between">

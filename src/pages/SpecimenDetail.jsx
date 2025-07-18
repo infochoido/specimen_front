@@ -122,6 +122,7 @@ const handleChange = (field) => (e) => {
 };
 
 
+
   const updateStatus = async (newStatus) => {
     if (newStatus === "사용가능") {
       // 반납 버튼 누르면 잔량 입력 팝업 보여주기
@@ -168,6 +169,7 @@ const handleChange = (field) => (e) => {
       volume_remaining: returnVolume,
       status: "사용가능",
     };
+    console.log( updatedForm.volume_remaining);
     setSaving(true);
     const res = await fetch(`${API_BASE_URL}/api/v1/case-samples/${id}`, {
       method: "PATCH",
@@ -196,6 +198,7 @@ const handleChange = (field) => (e) => {
 
   const fields = [
     ["검체", "category"],
+    ["샘플이름", "sample_name"],
     ["샘플번호", "sample_number"],
     ["채취일자", "collected_date"],
     ["종", "species"],
@@ -215,7 +218,9 @@ return (
     <div className="max-w-[960px] w-full bg-[#f8fbf8]">
       {/* 헤더 */}
       <div className="px-4 pb-4">
-        <h1 className="text-[28px] font-bold text-[#0e1a0f]">검체 상세</h1>
+
+          <h1 className="text-[28px] font-bold text-[#0e1a0f]">검체 상세</h1>
+          
         <p className="text-sm text-[#519453]">전체 검체 정보 및 관리</p>
       </div>
 
@@ -250,7 +255,7 @@ return (
                   onChange={handleChange("volume_remaining")}
                 >
                   <option value="">선택 안 함</option>
-                  {[ 1.0,  2.0].map((val) => (
+                  {[ 0.5,1.0, 1.5 ,2.0].map((val) => (
                     <option key={val} value={val}>
                       {val} ml
                     </option>
@@ -369,7 +374,7 @@ return (
               onChange={(e) => setReturnVolume(e.target.value)}
             >
               <option value="">선택 안 함</option>
-              {[ 1.0,  2.0].map((val) => (
+              {[ 0.5, 1.0,1.5,2.0].map((val) => (
                 <option key={val} value={val}>
                   {val} ml
                 </option>

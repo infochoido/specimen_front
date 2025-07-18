@@ -92,7 +92,7 @@ export default function StorageSamples() {
                         className="hover:bg-[#e8f2e8] cursor-pointer"
                         onClick={() => navigate(`/specimen/${sample.id}`)}
                       >
-                        <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.species || "-"}</td>
+                        <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.sample_name || "-"}</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">{sample.sample_number || sample.id}</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.volume_remaining || "-"} ml</td>
                         <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{sample.category || "-"}</td>
