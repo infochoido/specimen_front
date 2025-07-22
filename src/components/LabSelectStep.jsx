@@ -6,6 +6,7 @@ export default function LabSelectStep({ onClose }) {
   const [selectedLabId, setSelectedLabId] = useState(null);
   const [newLabName, setNewLabName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [newLabLocation, setNewLabLocation] = useState("");
 
   // 실험실 목록 불러오기
   useEffect(() => {
@@ -74,6 +75,10 @@ export default function LabSelectStep({ onClose }) {
       alert("실험실 이름을 입력해주세요.");
       return;
     }
+    if (!newLabLocation.trim()) {
+      alert("실험실 위치를 입력해주세요.");
+      return;
+    }
     setLoading(true);
 
     const token = localStorage.getItem("access_token");
@@ -92,6 +97,7 @@ export default function LabSelectStep({ onClose }) {
         },
         body: JSON.stringify({
           name: newLabName,
+          location: newLabLocation,
           // userId는 서버가 토큰에서 현재 유저 정보 추출하므로 필요 없을 수 있음
         }),
       });
@@ -147,6 +153,13 @@ export default function LabSelectStep({ onClose }) {
           placeholder="실험실 이름 입력"
           value={newLabName}
           onChange={(e) => setNewLabName(e.target.value)}
+          className="w-full border border-[#d3e4d3] rounded-md px-3 py-2"
+        />
+        <input
+          type="text"
+          placeholder="실험실 위치 입력"
+          value={newLabLocation}
+          onChange={(e) => setNewLabLocation(e.target.value)}
           className="w-full border border-[#d3e4d3] rounded-md px-3 py-2"
         />
         <button

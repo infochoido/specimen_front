@@ -9,6 +9,7 @@ import SpecimenAdd from "./pages/SpecimenAdd";
 import SpecimenDetail from "./pages/SpecimenDetail";
 import StoragesSamples from "./pages/StoragesSamples";
 import AppWrapper from "./api/AppWrapper";
+import EtcStorage from "./pages/EtcStorage";
 
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
           <Route path="specimen/add" element={<SpecimenAdd />} />
           <Route path="specimen/:id" element={<SpecimenDetail />} />
           <Route path="storage/:storageId" element={<StoragesSamples />} />
+          <Route path="storage/etc/:storageId" element={<EtcStorage />} />
         </Route>
       </Routes>
     </Router>

@@ -109,24 +109,32 @@ export default function Storage() {
         {error && <p className="text-red-500 px-4">에러 발생: {error}</p>}
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
-  {storages.map((storage) => (
-        <div
-          key={storage.id}
-          onClick={() => navigate(`/storage/${storage.id}`)}
-          className="flex flex-1 gap-3 rounded-lg border border-[#d1e6d1] bg-[#f8fbf8] p-4 flex-col cursor-pointer hover:shadow-md transition"
-        >
-        <div
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-lg w-10 shrink-0"
-            style={{ backgroundImage: `url(${storage.photo_url})` }}
-        ></div>
-        <div className="flex flex-col gap-1">
-            <h2 className="text-[#0e1a0f] text-base font-bold leading-tight">{storage.name}</h2>
-            <p className="text-[#519453] text-sm font-normal leading-normal">{storage.location}</p>
+          {storages.map((storage) => {
+            const isEtc = storage.name === "기타 보관함";
+            const cardStyle = isEtc
+              ? "border-[#7C9F7C] bg-[#f8fbf8] hover:shadow-gray-200"
+              : "border-[#d1e6d1] bg-[#f8fbf8] hover:shadow-md";
+            return (
+              <div
+                key={storage.id}
+                onClick={() =>
+                  navigate(isEtc ? `/storage/etc/${storage.id}` : `/storage/${storage.id}`)
+                }
+                className={`flex flex-1 gap-3 rounded-lg border p-4 flex-col cursor-pointer transition ${cardStyle}`}
+              >
+                <div
+                  className="bg-center bg-no-repeat aspect-square bg-cover rounded-lg w-10 shrink-0"
+                  style={{ backgroundImage: `url(${storage.photo_url})` }}
+                ></div>
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-[#0e1a0f] text-base font-bold leading-tight">{storage.name}</h2>
+                  <p className="text-[#519453] text-sm font-normal leading-normal">{storage.location}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-        </div>
-    ))}
 
-    </div>
 
         {/* 추가 버튼 */}
         <button
