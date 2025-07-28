@@ -9,9 +9,8 @@ export default function ExcelUploadModal({ isOpen, onClose, labId, uploadProgres
   const [userId, setUserId] = useState(null);
   const [sampleNameFromFilename, setSampleNameFromFilename] = useState("");
   const [dbColumns] = useState([
-  { key: "sample_name", label: "샘플 이름*" },
-  { key: "sample_number", label: "샘플 번호*" },
-  { key: "category", label: "검체*" },
+  { key: "sample_number", label: "검체 번호*" },
+  { key: "category", label: "가검물 종류*" },
   { key: "species", label: "종" },
   { key: "status", label: "상태" },
   { key: "collected_place", label: "채취 장소" },
