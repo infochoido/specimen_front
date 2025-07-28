@@ -21,7 +21,7 @@ export default function EtcStorage() {
 
     const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
       fetch(
-        `${API_BASE_URL}/api/v1/case-samples?limit=${limit}&offset=${offset}&storage_id=${storageId}`, 
+        `${API_BASE_URL}/api/v1/case-samples?limit=${limit}&offset=${offset}&storage_id=${storageId}/`, 
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
