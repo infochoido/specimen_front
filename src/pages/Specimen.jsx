@@ -14,7 +14,7 @@ export default function Specimen() {
   const [totalCount, setTotalCount] = useState(0);
   const [filterStatus, setFilterStatus] = useState("전체");
   const navigate = useNavigate();
-  const limit = 30;
+  const limit = 20;
 
   // 사용자 정보 가져오기
   useEffect(() => {

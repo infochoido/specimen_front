@@ -12,7 +12,7 @@ export default function EtcStorage() {
   const [targetStorageId, setTargetStorageId] = useState("");
   const [page, setPage] = useState(1); // 페이지 번호 상태 추가
   const [totalCount, setTotalCount] = useState(0); // 총 아이템 수 상태 추가
-  const limit = 30; // 한 페이지당 아이템 수 (원하는 값으로 조절 가능)
+  const limit = 20; // 한 페이지당 아이템 수 (원하는 값으로 조절 가능)
   const navigate = useNavigate();
   const fetchData = useCallback(async () => {
   setLoading(true);
@@ -21,7 +21,7 @@ export default function EtcStorage() {
 
     const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
       fetch(
-        `${API_BASE_URL}/api/v1/case-samples?limit=${limit}&offset=${offset}&storage_id=${storageId}/`, 
+        `${API_BASE_URL}/api/v1/storages/${storageId}/case-samples?limit=${limit}&offset=${offset}`, 
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -55,7 +55,7 @@ export default function EtcStorage() {
     const countData = await countRes.json();
     const storagesData = await storagesRes.json();
 
-    setSamples(sampleData.samples || []);
+    setSamples(sampleData.filter((s) => s.status !== "폐기"));
     setStorage(storageData);
     setTotalCount(countData[0]?.sample_count || 0);
 

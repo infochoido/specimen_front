@@ -9,7 +9,7 @@ export default function StorageSamples() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit] = useState(30);
+  const [limit] = useState(20);
   const [selectedSampleIds, setSelectedSampleIds] = useState([]);
   const [storages, setStorages] = useState([]);
   const [targetStorageId, setTargetStorageId] = useState("");
