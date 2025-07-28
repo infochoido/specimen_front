@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../services/api";
 import { useNavigate } from 'react-router-dom';
 
-
 export default function Storage() {
   const [storages, setStorages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -13,7 +12,8 @@ export default function Storage() {
   const [newLocation, setNewLocation] = useState("");
   const [newPhotoUrl, setNewPhotoUrl] = useState("");
   const [adding, setAdding] = useState(false);
-  
+  const [sampleCounts, setSampleCounts] = useState({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,33 +36,52 @@ export default function Storage() {
     fetchUser();
   }, []);
 
-  useEffect(() => {
-    if (!userLabId) return;
+useEffect(() => {
+  if (!userLabId) return;
 
-    const fetchStorages = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        
-        const res = await fetch(`${API_BASE_URL}/api/v1/storages/`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-        if (!res.ok) throw new Error(`보관소 목록 불러오기 실패: ${res.status}`);
-        const data = await res.json();
-        const filtered = data.filter((storage) => storage.lab_id === userLabId);
-        setStorages(filtered);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchStorages = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/storages/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!res.ok) throw new Error(`보관소 목록 불러오기 실패: ${res.status}`);
+      const data = await res.json();
+      const filtered = data.filter((storage) => storage.lab_id === userLabId);
+      setStorages(filtered);
+
+      const countsMap = {};
+      for (const storage of filtered) {
+        try {
+          let url = `${API_BASE_URL}/api/v1/storages/sample-counts/${storage.id}`;
+          const countRes = await fetch(url, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          });
+          if (!countRes.ok) throw new Error();
+          const countData = await countRes.json();
+          countsMap[storage.id] = countData[0]?.sample_count || 0;
+        } catch (err) {
+          console.warn("샘플 개수 조회 실패", storage.id);
+          countsMap[storage.id] = 0;
+        }
       }
-    };
+      setSampleCounts(countsMap);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchStorages();
-  }, [userLabId]);
+  fetchStorages();
+}, [userLabId]);
 
   const handleAddStorage = async () => {
     if (!newName.trim() || !newLocation.trim()) {
@@ -129,20 +148,22 @@ export default function Storage() {
                 <div className="flex flex-col gap-1">
                   <h2 className="text-[#0e1a0f] text-base font-bold leading-tight">{storage.name}</h2>
                   <p className="text-[#519453] text-sm font-normal leading-normal">{storage.location}</p>
+                  <p className="text-gray-500 text-sm">
+                    샘플: {sampleCounts[storage.id] ?? 0}개
+                  </p>
                 </div>
               </div>
             );
           })}
         </div>
 
-
         {/* 추가 버튼 */}
         <button
-            onClick={() => setShowAddModal(true)}
-            className="fixed bottom-10 right-8 w-14 h-14 rounded-full bg-[#578e58] text-white text-3xl font-bold shadow-lg hover:bg-[#456e45] flex items-center justify-center leading-none"
-            aria-label="Add Storage"
-            >
-            <span className="translate-y-[-3px]">+</span>
+          onClick={() => setShowAddModal(true)}
+          className="fixed bottom-10 right-8 w-14 h-14 rounded-full bg-[#578e58] text-white text-3xl font-bold shadow-lg hover:bg-[#456e45] flex items-center justify-center leading-none"
+          aria-label="Add Storage"
+        >
+          <span className="translate-y-[-3px]">+</span>
         </button>
 
         {/* 추가 모달 */}

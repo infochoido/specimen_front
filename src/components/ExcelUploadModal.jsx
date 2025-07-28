@@ -2,16 +2,17 @@ import React, { useState,useEffect } from "react";
 import API_BASE_URL from "../services/api";
 import * as XLSX from "xlsx";
 
-export default function ExcelUploadModal({ isOpen, onClose, onSave, labId, uploadProgress }) {
+export default function ExcelUploadModal({ isOpen, onClose, labId, uploadProgress }) {
   const [excelData, setExcelData] = useState([]);
   const [mapping, setMapping] = useState({}); // 엑셀컬럼명 : db컬럼명 매핑
   const [storageId, setStorageId] = useState(null);
   const [userId, setUserId] = useState(null);
   const [sampleNameFromFilename, setSampleNameFromFilename] = useState("");
   const [dbColumns] = useState([
+  { key: "sample_name", label: "샘플 이름*" },
   { key: "sample_number", label: "샘플 번호*" },
   { key: "category", label: "검체*" },
-  { key: "species", label: "샘플 이름" },
+  { key: "species", label: "종" },
   { key: "status", label: "상태" },
   { key: "collected_place", label: "채취 장소" },
   { key: "collected_date", label: "채취 날짜" },
@@ -115,9 +116,7 @@ const fetchEtcStorageId = async (labId) => {
   }
 };
 
-
-
-const handleSave = () => {
+const handleSave = async () => {
   if (!storageId) {
     alert("기타 저장소 ID를 불러오는 중입니다. 잠시만 기다려 주세요.");
     return;
@@ -155,8 +154,40 @@ const handleSave = () => {
     }));
   });
 
-  onSave(mappedData);
+  if (mappedData.length === 0) {
+    alert("업로드할 데이터가 없습니다.");
+    return;
+  }
+
+  try {
+    if (uploadProgress) uploadProgress(`업로드 중... 0 / ${mappedData.length}`);
+
+    // API 호출
+    const res = await fetch(`${API_BASE_URL}/api/v1/case-samples/batch`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+      body: JSON.stringify(mappedData),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      alert(`업로드 실패: ${errorData.detail || res.statusText}`);
+      return;
+    }
+
+    alert(`${mappedData.length}개의 샘플이 성공적으로 등록되었습니다.`);
+    if (onClose) onClose();
+
+  } catch (err) {
+    alert("업로드 중 오류가 발생했습니다: " + err.message);
+  } finally {
+    if (uploadProgress) uploadProgress(null);
+  }
 };
+
 
 
   if (!isOpen) return null;

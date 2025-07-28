@@ -14,7 +14,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [labId, setLabId] = useState(null);
   const navigate = useNavigate();
-   const { isLoggedIn, user, checkLogin } = useAuth();
+   const { isLoggedIn } = useAuth();
   
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const Dashboard = () => {
         setLabId(data.lab_id);
       } catch (err) {
         
-        setError("사용자 정보를 불러오지 못했습니다.");
+        setError("사용자 정보를 불러오지 못했습니다.", err);
         navigate("/");
       }
     };

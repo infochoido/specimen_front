@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../services/api";
 
@@ -10,48 +10,69 @@ export default function EtcStorage() {
   const [selectedSampleIds, setSelectedSampleIds] = useState([]);
   const [storages, setStorages] = useState([]);
   const [targetStorageId, setTargetStorageId] = useState("");
+  const [page, setPage] = useState(1); // 페이지 번호 상태 추가
+  const [totalCount, setTotalCount] = useState(0); // 총 아이템 수 상태 추가
+  const limit = 30; // 한 페이지당 아이템 수 (원하는 값으로 조절 가능)
   const navigate = useNavigate();
+  const fetchData = useCallback(async () => {
+  setLoading(true);
+  try {
+    const offset = (page - 1) * limit;
+
+    const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
+      fetch(
+        `${API_BASE_URL}/api/v1/case-samples?limit=${limit}&offset=${offset}&storage_id=${storageId}`, 
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      ),
+      fetch(`${API_BASE_URL}/api/v1/storages/${storageId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+      fetch(`${API_BASE_URL}/api/v1/storages/sample-counts/${storageId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      fetch(`${API_BASE_URL}/api/v1/storages/`, {  // 보관함 리스트 API 추가
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    ]);
+
+    if (!samplesRes.ok || !storageRes.ok || !countRes.ok || !storagesRes.ok) {
+      throw new Error("데이터 불러오기 실패");
+    }
+
+    const sampleData = await samplesRes.json();
+    const storageData = await storageRes.json();
+    const countData = await countRes.json();
+    const storagesData = await storagesRes.json();
+
+    setSamples(sampleData.samples || []);
+    setStorage(storageData);
+    setTotalCount(countData[0]?.sample_count || 0);
+
+    // 현재 storageId 제외한 나머지 보관함들만 필터링하여 저장
+    setStorages(storagesData.filter((s) => s.id !== storageId));
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+    setSelectedSampleIds([]); // 선택 초기화 (필요 시)
+  }
+}, [storageId, page]);
+
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [sampleRes, storageRes, storagesRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/v1/case-samples/`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }),
-          fetch(`${API_BASE_URL}/api/v1/storages/${storageId}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }),
-          fetch(`${API_BASE_URL}/api/v1/storages/`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }),
-        ]);
-
-        if (!sampleRes.ok || !storageRes.ok || !storagesRes.ok)
-          throw new Error("데이터 불러오기 실패");
-
-        const sampleData = await sampleRes.json();
-        const storageData = await storageRes.json();
-        const storagesData = await storagesRes.json();
-
-        setSamples(sampleData.filter((s) => s.storage_id === storageId && s.status !== "폐기"));
-        setStorage(storageData);
-        setStorages(storagesData.filter((s) => s.id !== storageId));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, [storageId]);
+  }, [fetchData]);
 
   const toggleSelectAll = () => {
     if (selectedSampleIds.length === samples.length) {
@@ -80,9 +101,8 @@ export default function EtcStorage() {
           body: JSON.stringify({ storage_id: targetStorageId }),
         });
       }
-      // 이동 후 새로고침
-      window.location.reload();
       alert("선택한 검체가 이동되었습니다.");
+      fetchData(); // 이동 후 데이터 다시 불러오기
     } catch (err) {
       console.error("이동 실패:", err);
     }
@@ -91,6 +111,8 @@ export default function EtcStorage() {
   if (loading) {
     return <div className="px-40 py-10 text-[#0e1a0f] text-lg font-medium">로딩 중...</div>;
   }
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
   return (
     <div className="px-40 flex flex-1 justify-center py-5 bg-[#f8fbf8] min-h-screen">
@@ -159,57 +181,73 @@ export default function EtcStorage() {
                   </thead>
                   <tbody>
                     {samples.map((sample) => {
-                        const {
+                      const {
                         id,
                         sample_name,
                         sample_number,
                         volume_remaining,
                         category,
                         status,
-                        } = sample;
+                      } = sample;
 
-                        const isSelected = selectedSampleIds.includes(id);
+                      const isSelected = selectedSampleIds.includes(id);
 
-                        return (
+                      return (
                         <tr
-                            key={id}
-                            className="hover:bg-[#e8f2e8] cursor-pointer"
-                            onClick={() => navigate(`/specimen/${id}`)}
+                          key={id}
+                          className="hover:bg-[#e8f2e8] cursor-pointer"
+                          onClick={() => navigate(`/specimen/${id}`)}
                         >
-                            <td className="border px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                          <td className="border px-2 py-2" onClick={(e) => e.stopPropagation()}>
                             <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
                                 e.stopPropagation();
                                 toggleSelect(id);
-                                }}
-                                onClick={(e) => e.stopPropagation()}
+                              }}
+                              onClick={(e) => e.stopPropagation()}
                             />
-                            </td>
-                            <td className="border px-4 py-2 text-sm text-[#0e1a0f] truncate max-w-[200px]">
+                          </td>
+                          <td className="border px-4 py-2 text-sm text-[#0e1a0f] truncate max-w-[200px]">
                             {sample_name || "-"}
-                            </td>
-                            <td className="border px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">
+                          </td>
+                          <td className="border px-4 py-2 text-sm text-[#0e1a0f] whitespace-nowrap">
                             {sample_number || id}
-                            </td>
-                            <td className="border px-4 py-2 text-sm text-[#0e1a0f]">
+                          </td>
+                          <td className="border px-4 py-2 text-sm text-[#0e1a0f]">
                             {typeof volume_remaining === "number" ? `${volume_remaining} ml` : "-"}
-                            </td>
-                            <td className="border px-4 py-2 text-sm text-[#0e1a0f]">
-                            {category || "-"}
-                            </td>
-                            <td className="border px-4 py-2 text-sm text-[#0e1a0f]">
-                            {status || "-"}
-                            </td>
+                          </td>
+                          <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{category || "-"}</td>
+                          <td className="border px-4 py-2 text-sm text-[#0e1a0f]">{status || "-"}</td>
                         </tr>
-                        );
+                      );
                     })}
-                    </tbody>
-
+                  </tbody>
                 </table>
               </div>
             )}
+
+            {/* 페이지네이션 */}
+            <div className="flex justify-center mt-6 space-x-2">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >
+                이전
+              </button>
+              <span className="text-sm text-gray-700">
+                페이지 {page} / {totalPages}
+              </span>
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >
+                다음
+              </button>
+            </div>
           </div>
         </main>
       </div>
