@@ -10,7 +10,7 @@ const SpecimenTypeChart = ({ byType }) => {
     <div className="flex min-w-72 flex-1 flex-col gap-2 rounded-lg border border-[#d3e4d3] p-6 overflow-x-auto">
       <p className="text-[#101910] text-base font-medium leading-normal">검체별 분류</p>
       <p className="text-[#101910] tracking-light text-[32px] font-bold leading-tight truncate">
-        {types.reduce((acc, [, val]) => acc + val, 0)}
+        {types.reduce((acc, [, val]) => acc + val, 0).toLocaleString()}개
       </p>
       <div className="flex gap-1">
         <p className="text-[#578e58] text-base font-normal leading-normal">이번달 신규 가검물</p>
@@ -27,7 +27,7 @@ const SpecimenTypeChart = ({ byType }) => {
               {/* hover 시 value 표시 */}
               {hoveredIdx === idx && (
                 <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-[#578e58] text-white text-xs px-2 py-1 rounded whitespace-nowrap select-none pointer-events-none z-10">
-                  {value}
+                  {value.toLocaleString()}
                 </div>
               )}
             </div>

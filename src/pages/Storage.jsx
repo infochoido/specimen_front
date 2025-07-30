@@ -68,7 +68,7 @@ useEffect(() => {
           const countData = await countRes.json();
           countsMap[storage.id] = countData[0]?.sample_count || 0;
         } catch (err) {
-          console.warn("샘플 개수 조회 실패", storage.id);
+          console.warn("샘플 개수 조회 실패", err);
           countsMap[storage.id] = 0;
         }
       }
@@ -149,7 +149,7 @@ useEffect(() => {
                   <h2 className="text-[#0e1a0f] text-base font-bold leading-tight">{storage.name}</h2>
                   <p className="text-[#519453] text-sm font-normal leading-normal">{storage.location}</p>
                   <p className="text-gray-500 text-sm">
-                    샘플: {sampleCounts[storage.id] ?? 0}개
+                    샘플: {(sampleCounts[storage.id] ?? 0).toLocaleString()}개
                   </p>
                 </div>
               </div>

@@ -13,6 +13,13 @@ export default function StorageSamples() {
   const [selectedSampleIds, setSelectedSampleIds] = useState([]);
   const [storages, setStorages] = useState([]);
   const [targetStorageId, setTargetStorageId] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterSampleName, setFilterSampleName] = useState("");
+  const [filterSampleNumber, setFilterSampleNumber] = useState("");
+  const [filterCategoryInput, setFilterCategoryInput] = useState("");
+  const [filterSampleNameInput, setFilterSampleNameInput] = useState("");
+  const [filterSampleNumberInput, setFilterSampleNumberInput] = useState("");
+  
   const navigate = useNavigate();
 
   const totalPages = Math.ceil(totalCount / limit);
@@ -21,10 +28,16 @@ export default function StorageSamples() {
     setLoading(true);
     try {
       const offset = (page - 1) * limit;
+      const params = new URLSearchParams();
+      params.append("limit", limit);
+      params.append("offset", offset);
+      if (filterCategory) params.append("category", filterCategory);
+      if (filterSampleName) params.append("case_name", filterSampleName);
+      if (filterSampleNumber) params.append("sample_number", filterSampleNumber);
 
       const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
         fetch(
-          `${API_BASE_URL}/api/v1/storages/${storageId}/case-samples?limit=${limit}&offset=${offset}`,
+          `${API_BASE_URL}/api/v1/storages/${storageId}/case-samples?${params.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -69,11 +82,24 @@ export default function StorageSamples() {
     } finally {
       setLoading(false);
     }
-  }, [storageId, page, limit]);
+  }, [storageId, page, limit, filterCategory, filterSampleName, filterSampleNumber]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const onFilterInputChange = (setter) => (e) => {
+    setter(e.target.value);
+  };
+
+    const applyFilters = () => {
+    setFilterCategory(filterCategoryInput);
+    setFilterSampleName(filterSampleNameInput);
+    setFilterSampleNumber(filterSampleNumberInput);
+    setPage(1);
+  };
+
+
 
   // 전체 선택/해제
   const toggleSelectAll = () => {
@@ -90,6 +116,8 @@ export default function StorageSamples() {
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
     );
   };
+
+  
 
   // 선택된 샘플들 이동
   const moveSamples = async () => {
@@ -141,6 +169,38 @@ export default function StorageSamples() {
               </div>
             </div>
 
+      {/* 필터 입력창 */}
+      <div className="flex gap-3 px-4 mb-4">
+        
+        <input
+          type="text"
+          placeholder="케이스 필터"
+          value={filterSampleNameInput}
+          onChange={onFilterInputChange(setFilterSampleNameInput)}
+          className="border rounded px-3 py-1 text-sm flex-1"
+        />
+        <input
+          type="text"
+          placeholder="개체번호 필터"
+          value={filterSampleNumberInput}
+          onChange={onFilterInputChange(setFilterSampleNumberInput)}
+          className="border rounded px-3 py-1 text-sm flex-1"
+        />
+        <input
+          type="text"
+          placeholder="가검물종류 필터"
+          value={filterCategoryInput}
+          onChange={onFilterInputChange(setFilterCategoryInput)}
+          className="border rounded px-3 py-1 text-sm flex-1"
+        />
+        <button
+          onClick={applyFilters}
+          className="bg-[#519453] text-white px-4 py-1 rounded text-sm hover:bg-[#407e44]"
+        >
+          필터 적용
+        </button>
+      </div>
+
             {/* 이동 선택 바 */}
             {samples.length > 0 && (
               <div className="flex items-center justify-between mb-3 px-4">
@@ -188,10 +248,10 @@ export default function StorageSamples() {
                           onChange={toggleSelectAll}
                         />
                       </th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체 이름</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체 번호</th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">케이스</th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">개체번호</th>
                       <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">잔여용량</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체</th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">가검물종류</th>
                       <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">상태</th>
                     </tr>
                   </thead>

@@ -106,9 +106,9 @@ const Dashboard = () => {
             </div>
 
             <div className="flex flex-wrap gap-4 p-4">
-              <DashboardSummaryCard label="총 검체" value={stats.total} />
-              <DashboardSummaryCard label="현재 저장중인 검체" value={stats.in_storage} />
-              <DashboardSummaryCard label="사용중인 검체" value={stats.processed} />
+              <DashboardSummaryCard label="총 검체" value={stats.total.toLocaleString()} />
+              <DashboardSummaryCard label="현재 저장중인 검체" value={stats.in_storage.toLocaleString()} />
+              <DashboardSummaryCard label="사용중인 검체" value={stats.processed.toLocaleString()} />
             </div>
 
             <h2 className="text-[#101910] text-[22px] font-bold px-4 pb-3 pt-5">검체 개요</h2>

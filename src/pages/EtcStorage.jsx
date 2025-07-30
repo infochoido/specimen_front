@@ -10,65 +10,79 @@ export default function EtcStorage() {
   const [selectedSampleIds, setSelectedSampleIds] = useState([]);
   const [storages, setStorages] = useState([]);
   const [targetStorageId, setTargetStorageId] = useState("");
-  const [page, setPage] = useState(1); // 페이지 번호 상태 추가
-  const [totalCount, setTotalCount] = useState(0); // 총 아이템 수 상태 추가
-  const limit = 20; // 한 페이지당 아이템 수 (원하는 값으로 조절 가능)
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const limit = 20;
   const navigate = useNavigate();
-  const fetchData = useCallback(async () => {
-  setLoading(true);
-  try {
-    const offset = (page - 1) * limit;
 
-    const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
-      fetch(
-        `${API_BASE_URL}/api/v1/storages/${storageId}/case-samples?limit=${limit}&offset=${offset}`, 
-        {
+  // 필터 입력 상태 (사용자가 입력하는 값)
+  const [filterCategoryInput, setFilterCategoryInput] = useState("");
+  const [filterCaseNameInput, setFilterCaseNameInput] = useState("");
+  const [filterCaseNumberInput, setFilterCaseNumberInput] = useState("");
+
+  // 실제 API 호출용 필터 상태
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCaseName, setFilterCaseName] = useState("");
+  const [filterCaseNumber, setFilterCaseNumber] = useState("");
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const offset = (page - 1) * limit;
+      const params = new URLSearchParams();
+      params.append("limit", limit);
+      params.append("offset", offset);
+      if (filterCategory) params.append("category", filterCategory);
+      if (filterCaseName) params.append("case_name", filterCaseName);
+      if (filterCaseNumber) params.append("case_number", filterCaseNumber);
+
+      const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
+        fetch(
+          `${API_BASE_URL}/api/v1/storages/${storageId}/case-samples?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
+        ),
+        fetch(`${API_BASE_URL}/api/v1/storages/${storageId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-        }
-      ),
-      fetch(`${API_BASE_URL}/api/v1/storages/${storageId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      }),
-      fetch(`${API_BASE_URL}/api/v1/storages/sample-counts/${storageId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "application/json",
-        },
-      }),
-      fetch(`${API_BASE_URL}/api/v1/storages/`, {  // 보관함 리스트 API 추가
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      }),
-    ]);
+        }),
+        fetch(`${API_BASE_URL}/api/v1/storages/sample-counts/${storageId}?${params.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            "Content-Type": "application/json",
+          },
+        }),
+        fetch(`${API_BASE_URL}/api/v1/storages/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }),
+      ]);
 
-    if (!samplesRes.ok || !storageRes.ok || !countRes.ok || !storagesRes.ok) {
-      throw new Error("데이터 불러오기 실패");
+      if (!samplesRes.ok || !storageRes.ok || !countRes.ok || !storagesRes.ok) {
+        throw new Error("데이터 불러오기 실패");
+      }
+
+      const sampleData = await samplesRes.json();
+      const storageData = await storageRes.json();
+      const countData = await countRes.json();
+      const storagesData = await storagesRes.json();
+
+      setSamples(sampleData.filter((s) => s.status !== "폐기"));
+      setStorage(storageData);
+      setTotalCount(countData[0]?.sample_count || 0);
+      setStorages(storagesData.filter((s) => s.id !== storageId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setSelectedSampleIds([]);
     }
-
-    const sampleData = await samplesRes.json();
-    const storageData = await storageRes.json();
-    const countData = await countRes.json();
-    const storagesData = await storagesRes.json();
-
-    setSamples(sampleData.filter((s) => s.status !== "폐기"));
-    setStorage(storageData);
-    setTotalCount(countData[0]?.sample_count || 0);
-
-    // 현재 storageId 제외한 나머지 보관함들만 필터링하여 저장
-    setStorages(storagesData.filter((s) => s.id !== storageId));
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-    setSelectedSampleIds([]); // 선택 초기화 (필요 시)
-  }
-}, [storageId, page]);
-
+  }, [storageId, page, filterCategory, filterCaseName, filterCaseNumber]);
 
   useEffect(() => {
     fetchData();
@@ -102,10 +116,18 @@ export default function EtcStorage() {
         });
       }
       alert("선택한 검체가 이동되었습니다.");
-      fetchData(); // 이동 후 데이터 다시 불러오기
+      fetchData();
     } catch (err) {
       console.error("이동 실패:", err);
     }
+  };
+
+  // 필터 적용 버튼 클릭 시 호출
+  const applyFilters = () => {
+    setFilterCategory(filterCategoryInput);
+    setFilterCaseName(filterCaseNameInput);
+    setFilterCaseNumber(filterCaseNumberInput);
+    setPage(1);
   };
 
   if (loading) {
@@ -125,6 +147,39 @@ export default function EtcStorage() {
                 <h1 className="text-[#0e1a0f] text-[28px] font-bold leading-tight">{storage?.name}</h1>
                 <p className="text-sm text-[#519453] mt-1">위치: {storage?.location}</p>
               </div>
+            </div>
+
+            {/* 필터 UI */}
+            <div className="flex gap-3 px-4 mb-4">
+              
+              <input
+                type="text"
+                placeholder="케이스 필터"
+                value={filterCaseNameInput}
+                onChange={(e) => setFilterCaseNameInput(e.target.value)}
+                className="border rounded px-3 py-1 text-sm flex-1"
+              />
+              <input
+                type="text"
+                placeholder="개체번호 필터"
+                value={filterCaseNumberInput}
+                onChange={(e) => setFilterCaseNumberInput(e.target.value)}
+                className="border rounded px-3 py-1 text-sm flex-1"
+              />
+
+              <input
+                type="text"
+                placeholder="가검물종류 필터"
+                value={filterCategoryInput}
+                onChange={(e) => setFilterCategoryInput(e.target.value)}
+                className="border rounded px-3 py-1 text-sm flex-1"
+              />
+              <button
+                onClick={applyFilters}
+                className="bg-[#519453] text-white px-4 py-1 rounded text-sm hover:bg-[#407e44]"
+              >
+                필터 적용
+              </button>
             </div>
 
             {/* 이동 선택 바 */}
@@ -168,30 +223,31 @@ export default function EtcStorage() {
                       <th className="border px-2 py-2 text-left">
                         <input
                           type="checkbox"
-                          checked={selectedSampleIds.length === samples.length}
+                          checked={selectedSampleIds.length === samples.length && samples.length > 0}
                           onChange={toggleSelectAll}
                         />
                       </th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체 이름</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체 번호</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">잔여용량</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">검체</th>
-                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">상태</th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">
+                        케이스
+                      </th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">
+                        개체번호
+                      </th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">
+                        잔여용량
+                      </th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">
+                        가검물종류
+                      </th>
+                      <th className="border px-4 py-2 text-left text-sm font-semibold text-[#0e1a0f]">
+                        상태
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {samples.map((sample) => {
-                      const {
-                        id,
-                        sample_name,
-                        sample_number,
-                        volume_remaining,
-                        category,
-                        status,
-                      } = sample;
-
+                      const { id, sample_name, sample_number, volume_remaining, category, status } = sample;
                       const isSelected = selectedSampleIds.includes(id);
-
                       return (
                         <tr
                           key={id}
