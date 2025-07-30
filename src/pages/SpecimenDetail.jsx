@@ -197,9 +197,9 @@ const handleChange = (field) => (e) => {
   if (!sample) return <p className="p-8">로딩 중...</p>;
 
   const fields = [
-    ["검체", "category"],
-    ["샘플이름", "sample_name"],
-    ["샘플번호", "sample_number"],
+    ["검체종류", "category"],
+    ["케이스", "sample_name"],
+    ["개체번호", "sample_number"],
     ["채취일자", "collected_date"],
     ["종", "species"],
     ["잔량", "volume_remaining"],
