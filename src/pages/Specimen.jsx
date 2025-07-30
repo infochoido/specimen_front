@@ -13,6 +13,9 @@ export default function Specimen() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [filterStatus, setFilterStatus] = useState("전체");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterSampleName, setFilterSampleName] = useState("");
+  const [filterSampleNumber, setFilterSampleNumber] = useState("");
   const navigate = useNavigate();
   const limit = 20;
 
@@ -61,6 +64,7 @@ useEffect(() => {
 
   // 샘플 조회 함수
   const fetchSamples = useCallback(async () => {
+
   if (!userLabId) return;
 
   setLoading(true);
@@ -77,6 +81,11 @@ useEffect(() => {
     } else {
       queryParams.append("exclude_discarded", "true");
     }
+
+    if (filterCategory) queryParams.append("category", filterCategory);
+    if (filterSampleName) queryParams.append("sample_name", filterSampleName);
+    if (filterSampleNumber) queryParams.append("sample_number", filterSampleNumber);
+
 
     const res = await fetch(
       `${API_BASE_URL}/api/v1/case-samples/lab/${userLabId}?${queryParams.toString()}`,
@@ -193,6 +202,39 @@ useEffect(() => {
                   {status}
                 </button>
               ))}
+            </div>
+            <div className="px-4 py-3 flex flex-wrap gap-2 items-center">
+              
+              <input
+                type="text"
+                placeholder="케이스 번호"
+                value={filterSampleName}
+                onChange={(e) => setFilterSampleName(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+              />
+              <input
+                type="text"
+                placeholder="개체번호"
+                value={filterSampleNumber}
+                onChange={(e) => setFilterSampleNumber(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+              />
+              <input
+                type="text"
+                placeholder="가검물 종류"
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+              />
+              <button
+                onClick={() => {
+                  setPage(1); // 검색 시 페이지 초기화
+                  fetchSamples();
+                }}
+                className="bg-[#519453] text-white px-4 py-1 rounded-md text-sm"
+              >
+                검색
+              </button>
             </div>
 
             {loading ? (
