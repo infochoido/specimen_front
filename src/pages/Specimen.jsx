@@ -206,7 +206,7 @@ useEffect(() => {
                 <table className="min-w-full table-fixed border-collapse">
                   <thead className="bg-[#f0f6f0]">
                     <tr>
-                      {["검체 이름", "검체 번호", "잔여용량", "검체", "상태"].map((col) => (
+                      {["케이스번호", "개체번호", "잔여용량", "가검물종류", "상태"].map((col) => (
                         <th key={col} className="border px-4 py-2 text-left text-sm font-semibold">
                           {col}
                         </th>
