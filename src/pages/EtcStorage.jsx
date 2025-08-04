@@ -32,9 +32,9 @@ export default function EtcStorage() {
       const params = new URLSearchParams();
       params.append("limit", limit);
       params.append("offset", offset);
-      if (filterCategory) params.append("category", filterCategory);
-      if (filterCaseName) params.append("case_name", filterCaseName);
-      if (filterCaseNumber) params.append("case_number", filterCaseNumber);
+      if (filterCategory) params.append("category", encodeURIComponent(filterCategory));
+      if (filterCaseName) params.append("case_name", encodeURIComponent(filterCaseName));
+      if (filterCaseNumber) params.append("case_number", encodeURIComponent(filterCaseNumber));
 
       const [samplesRes, storageRes, countRes, storagesRes] = await Promise.all([
         fetch(
