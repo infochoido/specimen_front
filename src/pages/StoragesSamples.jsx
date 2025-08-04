@@ -119,27 +119,27 @@ export default function StorageSamples() {
 
   
 
-  // 선택된 샘플들 이동
-  const moveSamples = async () => {
-    if (!targetStorageId || selectedSampleIds.length === 0) return;
+const moveSamples = async () => {
+  if (!targetStorageId || selectedSampleIds.length === 0) return;
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/case-samples/move`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+      body: JSON.stringify({
+        sample_ids: selectedSampleIds,
+        target_storage_id: targetStorageId
+      }),
+    });
+    alert("선택한 검체가 이동되었습니다.");
+    fetchData();
+  } catch (err) {
+    console.error("이동 실패:", err);
+  }
+};
 
-    try {
-      for (const sampleId of selectedSampleIds) {
-        await fetch(`${API_BASE_URL}/api/v1/case-samples/${sampleId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify({ storage_id: targetStorageId }),
-        });
-      }
-      alert("선택한 검체가 이동되었습니다.");
-      fetchData(); // 이동 후 데이터 다시 불러오기
-    } catch (err) {
-      console.error("이동 실패:", err);
-    }
-  };
 
   if (loading) {
     return (

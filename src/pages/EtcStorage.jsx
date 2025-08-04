@@ -102,25 +102,26 @@ export default function EtcStorage() {
     );
   };
 
-  const moveSamples = async () => {
-    if (!targetStorageId || selectedSampleIds.length === 0) return;
-    try {
-      for (const sampleId of selectedSampleIds) {
-        await fetch(`${API_BASE_URL}/api/v1/case-samples/${sampleId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify({ storage_id: targetStorageId }),
-        });
-      }
-      alert("선택한 검체가 이동되었습니다.");
-      fetchData();
-    } catch (err) {
-      console.error("이동 실패:", err);
-    }
-  };
+const moveSamples = async () => {
+  if (!targetStorageId || selectedSampleIds.length === 0) return;
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/case-samples/move`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+      body: JSON.stringify({
+        sample_ids: selectedSampleIds,
+        target_storage_id: targetStorageId
+      }),
+    });
+    alert("선택한 검체가 이동되었습니다.");
+    fetchData();
+  } catch (err) {
+    console.error("이동 실패:", err);
+  }
+};
 
   // 필터 적용 버튼 클릭 시 호출
   const applyFilters = () => {
