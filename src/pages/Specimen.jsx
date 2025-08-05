@@ -17,7 +17,7 @@ export default function Specimen() {
   const [filterSampleName, setFilterSampleName] = useState("");
   const [filterSampleNumber, setFilterSampleNumber] = useState("");
   const navigate = useNavigate();
-  const limit = 20;
+  const limit = 30;
 
   // 사용자 정보 가져오기
   useEffect(() => {

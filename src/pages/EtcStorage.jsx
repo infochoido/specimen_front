@@ -12,7 +12,7 @@ export default function EtcStorage() {
   const [targetStorageId, setTargetStorageId] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const limit = 20;
+  const limit = 30;
   const navigate = useNavigate();
 
   // 필터 입력 상태 (사용자가 입력하는 값)
